@@ -1,0 +1,40 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import KonkaniWords from '../models/konkaniWordModel.js';
+
+dotenv.config();
+
+// MongoDB connection function
+const connectDb = async () => {
+  if (mongoose.connections[0].readyState) return;
+  await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+};
+
+export default async (req, res) => {
+  try {
+    // Connect to the database
+    await connectDb();
+
+    if (req.method === 'GET') {
+      const { latinForm } = req.query;
+
+      if (!latinForm) {
+        return res.status(400).json({ message: 'Latin form is required.' });
+      }
+
+      const word = await KonkaniWords.findOne({ latinForm });
+      if (word) {
+        res.json(word);
+      } else {
+        res.status(404).json({ message: 'Word not found with the provided Latin form.' });
+      }
+    } else {
+      res.status(405).json({ message: 'Method Not Allowed' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
