@@ -21,7 +21,7 @@ export default async (req, res) => {
       const randomWord = await KonkaniWords.findOne().skip(randomIndex);
 
       if (randomWord) {
-        res.json(randomWord);
+        res.status(200).json(randomWord);
       } else {
         res.status(404).json({ message: 'No words found' });
       }
